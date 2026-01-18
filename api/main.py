@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from typing import Any
 import sqlite3
 
-
 class Movie(BaseModel):
     title: str
     year: str
@@ -16,22 +15,21 @@ app.mount("/static", StaticFiles(directory="../ui/build/static", check_dir=False
 
 @app.get("/")
 def serve_react_app():
-   return FileResponse("../ui/build/index.html")
+    return FileResponse("../ui/build/index.html")
 
 @app.get('/movies')
-def get_movies():  # put application's code here
+def get_movies():
     db = sqlite3.connect('movies.db')
     cursor = db.cursor()
     movies = cursor.execute('SELECT * FROM movies')
-
     output = []
     for movie in movies:
-         movie = {'id': movie[0], 'title': movie[1], 'year': movie[2], 'actors': movie[3]}
-         output.append(movie)
+        movie = {'id': movie[0], 'title': movie[1], 'year': movie[2], 'actors': movie[3]}
+        output.append(movie)
     return output
 
 @app.get('/movies/{movie_id}')
-def get_single_movie(movie_id:int):  # put application's code here
+def get_single_movie(movie_id: int):
     db = sqlite3.connect('movies.db')
     cursor = db.cursor()
     movie = cursor.execute(f"SELECT * FROM movies WHERE id={movie_id}").fetchone()
@@ -45,17 +43,15 @@ def add_movie(movie: Movie):
     cursor = db.cursor()
     cursor.execute(f"INSERT INTO movies (title, year) VALUES ('{movie.title}', '{movie.year}')")
     db.commit()
-    return {"message": f"Movie with id = {cursor.lastrowid} added successfully"}
-    # movie = models.Movie.create(**movie.dict())
-    # return movie
+    return {"id": cursor.lastrowid, "title": movie.title, "year": movie.year}
 
 @app.put("/movies/{movie_id}")
-def update_movie(movie_id:int, params: dict[str, Any]):
+def update_movie(movie_id: int, params: dict[str, Any]):
     db = sqlite3.connect('movies.db')
     cursor = db.cursor()
     cursor.execute(
-    "UPDATE movies SET title = ?, year = ?, actors = ? WHERE id = ?",
-    (params['title'], params['year'], params['actors'], movie_id)
+        "UPDATE movies SET title = ?, year = ?, actors = ? WHERE id = ?",
+        (params['title'], params['year'], params['actors'], movie_id)
     )
     db.commit()
     if cursor.rowcount == 0:
@@ -63,7 +59,7 @@ def update_movie(movie_id:int, params: dict[str, Any]):
     return {"message": f"Movie with id = {cursor.lastrowid} updated successfully"}
 
 @app.delete("/movies/{movie_id}")
-def delete_movie(movie_id:int):
+def delete_movie(movie_id: int):
     db = sqlite3.connect('movies.db')
     cursor = db.cursor()
     cursor.execute("DELETE FROM movies WHERE id = ?", (movie_id,))
@@ -73,13 +69,13 @@ def delete_movie(movie_id:int):
     return {"message": f"Movie with id = {movie_id} deleted successfully"}
 
 @app.delete("/movies")
-def delete_movies(movie_id:int):
+def delete_movies():
     db = sqlite3.connect('movies.db')
     cursor = db.cursor()
     cursor.execute("DELETE FROM movies")
     db.commit()
     return {"message": f"Deleted {cursor.rowcount} movies"}
 
-
-# if __name__ == '__main__':
-#     app.run()
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
