@@ -31,13 +31,23 @@ function App() {
         }
     }
 
+    async function handleDeleteMovie(movie) {
+        const response = await fetch(`/movies/${movie.id}`, {
+            method: 'DELETE',
+        });
+        if (response.ok) {
+            const nextMovies = movies.filter(m => m !== movie);
+            setMovies(nextMovies);
+        }
+    }
+
     return (
         <div className="container">
             <h1>My favourite movies to watch</h1>
             {movies.length === 0
                 ? <p>No movies yet. Maybe add something?</p>
                 : <MoviesList movies={movies}
-                    onDeleteMovie={(movie) => setMovies(movies.filter(m => m !== movie))}
+                    onDeleteMovie={handleDeleteMovie}
                 />}
             {addingMovie
                 ? <MovieForm onMovieSubmit={handleAddMovie}
