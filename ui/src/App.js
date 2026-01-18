@@ -26,7 +26,11 @@ function App() {
             headers: { 'Content-Type': 'application/json' }
         });
         if (response.ok) {
-            setMovies([...movies, movie]);
+            const moviesResponse = await fetch('/movies');
+            if (moviesResponse.ok) {
+                const updatedMovies = await moviesResponse.json();
+                setMovies(updatedMovies);
+            }
             setAddingMovie(false);
         }
     }
