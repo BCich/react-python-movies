@@ -1,9 +1,12 @@
 import React, {useState, useEffect} from "react";
 import { toast } from 'react-toastify';
+import { motion } from "framer-motion";
+import OscarRating from "./OscarRating";
 
 export default function MovieForm({onMovieSubmit, buttonLabel}) {
     const [title, setTitle] = useState('');
     const [year, setYear] = useState('');
+    const [rating, setRating] = useState(0);
     const [availableActors, setAvailableActors] = useState([]);
     const [availableDirectors, setAvailableDirectors] = useState([]);
     const [selectedActorIds, setSelectedActorIds] = useState([]);
@@ -38,12 +41,14 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
         const movieData = {
             title, 
             year, 
+            rating,
             director_id: selectedDirectorId ? parseInt(selectedDirectorId) : null,
             actor_ids: selectedActorIds 
         };
         onMovieSubmit(movieData);
         setTitle('');
         setYear('');
+        setRating(0);
         setSelectedActorIds([]);
         setSelectedDirectorId("");
     }
@@ -59,6 +64,13 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
                 <input type="text" value={year} onChange={(e) => setYear(e.target.value)} />
             </div>
             
+            <div style={{ marginBottom: '15px' }}>
+                <label>Rating (Oscars)</label>
+                <div style={{ padding: '5px 0' }}>
+                    <OscarRating rating={rating} onRate={setRating} />
+                </div>
+            </div>
+
             <div>
                 <label>Director</label>
                 <select 
@@ -94,7 +106,13 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
                 </select>
             </div>
             
-            <button>{buttonLabel || 'Add movie'}</button>
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+                {buttonLabel || 'Add movie'}
+            </motion.button>
         </form>
     );
 }
