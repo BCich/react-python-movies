@@ -1,3 +1,23 @@
-.idea
-/venv/
+# --- Python Bytecode ---
 __pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual Environments ---
+venv/
+.venv/
+env/
+
+# --- Environment Variables ---
+.env
+
+# --- Databases ---
+*.db
+*.sqlite3
+movies.db
+
+# --- Vector DB ---
+chroma_db/
+
+# --- Logs ---
+*.log
