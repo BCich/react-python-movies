@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { motion } from "framer-motion";
 import OscarRating from "./OscarRating";
 
-export default function MovieForm({onMovieSubmit, buttonLabel}) {
+export default function MovieForm({onMovieSubmit, buttonLabel, initialData}) {
     const [title, setTitle] = useState('');
     const [year, setYear] = useState('');
     const [rating, setRating] = useState(0);
@@ -31,6 +31,36 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (initialData) {
+            setTitle(initialData.title || '');
+            setYear(initialData.year || '');
+            setRating(initialData.rating || 0);
+            
+            if (initialData.director_id) {
+                setSelectedDirectorId(initialData.director_id.toString());
+            } else {
+                setSelectedDirectorId("");
+            }
+
+            if (initialData.actor_ids && Array.isArray(initialData.actor_ids)) {
+                setSelectedActorIds(initialData.actor_ids);
+            } else {
+                setSelectedActorIds([]);
+            }
+        }
+    }, [initialData]);
+
+    const handleActorToggle = (actorId) => {
+        setSelectedActorIds(prev => {
+            if (prev.includes(actorId)) {
+                return prev.filter(id => id !== actorId);
+            } else {
+                return [...prev, actorId];
+            }
+        });
+    };
+
     function handleSubmit(event) {
         event.preventDefault();
         if (!title || !year) {
@@ -39,6 +69,7 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
         }
 
         const movieData = {
+            id: initialData ? initialData.id : undefined, 
             title, 
             year, 
             rating,
@@ -46,11 +77,14 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
             actor_ids: selectedActorIds 
         };
         onMovieSubmit(movieData);
-        setTitle('');
-        setYear('');
-        setRating(0);
-        setSelectedActorIds([]);
-        setSelectedDirectorId("");
+        
+        if (!initialData) {
+            setTitle('');
+            setYear('');
+            setRating(0);
+            setSelectedActorIds([]);
+            setSelectedDirectorId("");
+        }
     }
 
     return (
@@ -87,23 +121,34 @@ export default function MovieForm({onMovieSubmit, buttonLabel}) {
                 </select>
             </div>
 
-            <div>
-                <label>Main Actor</label>
-                <select 
-                    value={selectedActorIds[0] || ""} 
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        setSelectedActorIds(val ? [parseInt(val)] : []);
-                    }}
-                    style={{backgroundColor: 'white'}}
-                >
-                    <option value="">-- Select Actor --</option>
+            <div style={{ marginBottom: '15px' }}>
+                <label>Actors (Select multiple)</label>
+                <div style={{ 
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                    border: '1px solid #ccc',
+                    padding: '10px', 
+                    backgroundColor: 'white',
+                    marginTop: '5px',
+                    borderRadius: '4px'
+                }}>
+                    {availableActors.length === 0 ? <p style={{color: '#999'}}>No actors available</p> : null}
+                    
                     {availableActors.map(actor => (
-                        <option key={actor.id} value={actor.id}>
-                            {actor.name}
-                        </option>
+                        <div key={actor.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                            <input
+                                type="checkbox"
+                                id={`actor-${actor.id}`}
+                                checked={selectedActorIds.includes(actor.id)}
+                                onChange={() => handleActorToggle(actor.id)}
+                                style={{ width: 'auto', marginRight: '10px' }}
+                            />
+                            <label htmlFor={`actor-${actor.id}`} style={{ margin: 0, cursor: 'pointer', fontWeight: 'normal' }}>
+                                {actor.name}
+                            </label>
+                        </div>
                     ))}
-                </select>
+                </div>
             </div>
             
             <motion.button
